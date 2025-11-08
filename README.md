@@ -7,20 +7,22 @@ A comprehensive, real-time campus transport management system built with Django,
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 📋 Table of Contents
-- [Features](#features)
-- [Screenshots](#screenshots)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
+- [Features](#-features)
+- [Screenshots](#️-screenshots)
+- [Tech Stack](#️-tech-stack)
+- [Installation](#-installation)
   - [macOS Setup](#macos-setup)
   - [Windows Setup](#windows-setup)
-- [Usage](#usage)
-- [Test Credentials](#test-credentials)
-- [Project Structure](#project-structure)
-- [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [License](#license)
-
-## ✨ Features
+- [Usage](#-usage)
+- [Test Credentials](#-test-credentials)
+- [Project Structure](#-project-structure)
+- [Database Models](#️-database-models)
+- [API Endpoints](#-api-endpoints)
+- [Contributing](#-contributing)
+- [Known Issues & Future Enhancements](#-known-issues--future-enhancements)
+- [License](#-license)
+- [Authors](#-authors)
+- [Support](#-support)
 
 ## ✨ Features
 
@@ -105,8 +107,6 @@ All routes end at **SJB Institute of Technology**
 - Real-time GPS tracking
 - One-to-One driver-route assignment
 - Migration-based database schema
-
-## 🚀 Installation
 
 ## 🚀 Installation
 
@@ -254,8 +254,6 @@ A convenient credentials page is available at `credentials.html` in the project 
 | 👨‍✈️ Driver 2 | `EMP102` | `driver123` | Assigned to Route SJB-BS-JP |
 
 **📌 Note:** Open `credentials.html` in your browser for a beautiful interface with copy-to-clipboard functionality!
-
-## 📁 Project Structure
 
 ## 📁 Project Structure
 
@@ -478,102 +476,4 @@ Give a ⭐️ if this project helped you!
 
 ---
 
-**Made with ❤️ for Campus Transport Management**
-│   ├── forms.py                 # Forms (Login, SignUp)
-│   ├── models.py                # Custom User model
-│   ├── urls.py                  # URL routing
-│   └── views.py                 # View functions
-├── transport_management_system/ # Project settings
-│   ├── settings.py             # Django settings
-│   ├── urls.py                 # Main URL configuration
-│   └── wsgi.py                 # WSGI configuration
-├── manage.py                    # Django management script
-└── venv/                        # Virtual environment
-```
-
-## Technologies Used
-
-- **Backend:** Django 5.2.8
-- **Frontend:** HTML5, CSS3, JavaScript
-- **Database:** SQLite (default)
-- **Image Processing:** Pillow
-- **Font:** Inter (Google Fonts)
-
-## User Model
-
-Custom user model with the following fields:
-- Username
-- Email
-- First Name
-- Last Name
-- Phone Number (optional)
-- Profile Image (optional)
-- Role (Admin, Driver, Student)
-- Created At
-- Updated At
-
-## Usage
-
-### Creating a New User
-
-1. Navigate to the signup page
-2. Fill in all required information
-3. Select your role (Admin, Driver, or Student)
-4. Submit the form
-5. You'll be automatically logged in and redirected to your role-specific dashboard
-
-### Logging In
-
-1. Navigate to the login page
-2. Enter your username and password
-3. Click "Sign In"
-4. You'll be redirected to your dashboard based on your role
-
-### Dashboard Features
-
-Each dashboard includes:
-- Statistics cards with key metrics
-- Role-specific functionality
-- Quick actions panel
-- Navigation sidebar
-- User profile display
-
-## Customization
-
-### Adding New Features
-
-1. **Add new models** in `core/models.py`
-2. **Create forms** in `core/forms.py`
-3. **Add views** in `core/views.py`
-4. **Configure URLs** in `core/urls.py`
-5. **Create templates** in `core/templates/core/`
-6. **Add styles** in `core/static/core/css/`
-
-### Styling
-
-All CSS is organized into three main files:
-- `style.css` - Landing page styling
-- `auth.css` - Login/Signup pages styling
-- `dashboard.css` - Dashboard styling
-
-CSS variables are used for easy theme customization.
-
-## Next Steps
-
-Potential enhancements:
-- [ ] Real-time GPS tracking
-- [ ] Payment integration
-- [ ] Email notifications
-- [ ] Mobile app
-- [ ] Advanced analytics
-- [ ] Route optimization algorithms
-- [ ] Multi-language support
-- [ ] Dark mode
-
-## License
-
-This project is open-source and available for educational purposes.
-
-## Support
-
-For issues or questions, please contact the development team.
+**Built with ❤️ using Django and Leaflet.js**
