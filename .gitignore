@@ -5,12 +5,16 @@
 .Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
 # Virtual Environment
 venv/
 env/
 ENV/
 .venv
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Django
 *.log
@@ -23,35 +27,30 @@ db.sqlite3-journal
 # Media files (uploaded by users)
 media/
 staticfiles/
+static_root/
 
-# IDE
+# IDE & Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
+*.sublime-project
+*.sublime-workspace
 
 # Environment variables
 .env
 .env.local
+.env.production
+.env.development
 
-# Test files
-test_credentials.html
-test_auth.py
-
-# Setup/Helper scripts (optional - keep if needed for deployment)
-create_admin.py
-create_users.py
-create_routes.py
-assign_drivers.py
-
-# Documentation files that are duplicates or outdated
-BUS_ROUTES_DOCUMENTATION.md
-DASHBOARD_UPDATES.md
-DASHBOARD_VISUAL_GUIDE.md
-QUICK_START_ROUTES.md
-SETUP_COMPLETE.md
+# Test & Development files
+test_*.py
+test_*.html
+*_test.py
+create_*.py
+assign_*.py
 
 # Coverage reports
 htmlcov/
@@ -59,9 +58,24 @@ htmlcov/
 .coverage.*
 coverage.xml
 *.cover
+.hypothesis/
 
 # Pytest
 .pytest_cache/
+.tox/
+
+# Documentation (temporary/local)
+docs/_build/
+*.md.backup
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Backup files
+*.bak
+*.tmp
+*~
 
 # Migrations (optional - uncomment if you want to ignore migrations)
 # */migrations/*.py
