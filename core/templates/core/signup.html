@@ -1,0 +1,427 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/auth.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="{% url 'core:landing' %}" class="back-link">← Back to Home</a>
+                <div class="brand">
+                    <svg class="logo-icon" width="40" height="40" viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                        <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                        <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                    </svg>
+                    <h1>Join CampusShuttle</h1>
+                    <p>Create your account and start riding today</p>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if not role %}
+                <!-- Role Selection -->
+                <div class="role-selection">
+                    <h2 class="role-title">Select Your Role</h2>
+                    <div class="role-buttons">
+                        <a href="?role=student" class="role-btn student-btn">
+                            <div class="role-icon">🎓</div>
+                            <h3>Student</h3>
+                            <p>Access CampusShuttle services</p>
+                        </a>
+                        <a href="?role=driver" class="role-btn driver-btn">
+                            <div class="role-icon">🚌</div>
+                            <h3>Driver</h3>
+                            <p>Manage shuttle operations</p>
+                        </a>
+                        <a href="?role=admin" class="role-btn admin-btn">
+                            <div class="role-icon">⚙️</div>
+                            <h3>Admin</h3>
+                            <p>System administration</p>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Role-Specific Form -->
+                <div class="role-indicator">
+                    {% if role == 'student' %}
+                        <span class="role-badge student">🎓 Student Registration</span>
+                    {% elif role == 'driver' %}
+                        <span class="role-badge driver">🚌 Driver Registration</span>
+                    {% elif role == 'admin' %}
+                        <span class="role-badge admin">⚙️ Admin Registration</span>
+                    {% endif %}
+                    <a href="{% url 'core:signup' %}" class="change-role">Change Role</a>
+                </div>
+
+                <form method="post" class="auth-form signup-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="role" value="{{ role }}">
+                    
+                    {% if role == 'student' %}
+                        <div class="form-group">
+                            <label for="id_usn">USN (University Seat Number)</label>
+                            {{ form.usn }}
+                            {% if form.usn.errors %}
+                                <span class="error">{{ form.usn.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    {% elif role == 'driver' %}
+                        <div class="form-group">
+                            <label for="id_emp_no">Employee Number</label>
+                            {{ form.emp_no }}
+                            {% if form.emp_no.errors %}
+                                <span class="error">{{ form.emp_no.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    {% elif role == 'admin' %}
+                        <div class="form-group">
+                            <label for="id_username">Username</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <span class="error">{{ form.username.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if role == 'student' or role == 'driver' %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_first_name">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <span class="error">{{ form.first_name.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="id_last_name">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <span class="error">{{ form.last_name.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_email">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <span class="error">{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if role == 'student' or role == 'driver' %}
+                        <div class="form-group">
+                            <label for="id_phone_number">Phone Number</label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                                <span class="error">{{ form.phone_number.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_gender">Gender</label>
+                            {{ form.gender }}
+                            {% if form.gender.errors %}
+                                <span class="error">{{ form.gender.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_password1">Password</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <span class="error">{{ form.password1.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password2">Confirm Password</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <span class="error">{{ form.password2.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+            {% endif %}
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{% url 'core:login' %}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Override auth.css for signup page */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .auth-card {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-selection {
+            padding: 1rem 0;
+        }
+
+        .role-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .role-buttons {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .role-btn {
+            display: block;
+            padding: 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #1f2937;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .role-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+        }
+
+        .role-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-btn h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #1f2937;
+        }
+
+        .role-btn p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .role-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .role-badge {
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+
+        .role-badge.student {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-badge.driver {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .role-badge.admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .change-role {
+            font-size: 0.875rem;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .change-role:hover {
+            text-decoration: underline;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-icon {
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .auth-footer p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .auth-footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        /* Create Account Button Styling */
+        .btn-primary {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+
+    <script>
+    </script>
+</body>
+</html>

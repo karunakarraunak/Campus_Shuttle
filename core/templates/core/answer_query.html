@@ -1,0 +1,399 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answer Query - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+
+            <!-- User Profile in Sidebar -->
+            <div class="sidebar-profile">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" class="sidebar-avatar-img">
+                {% else %}
+                    <div class="sidebar-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                {% endif %}
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{% url 'core:dashboard' %}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+                {% if user.role == 'admin' %}
+                <a href="/admin/" class="nav-item" target="_blank">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Admin Panel</span>
+                </a>
+                {% endif %}
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{% url 'core:logout' %}" class="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>💬 Answer Student Query</h1>
+                    <p>Provide a response to the student's question</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile" class="user-avatar-img">
+                        {% else %}
+                            <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                        {% endif %}
+                        <div class="user-info">
+                            <span class="user-name">{{ user.get_full_name }}</span>
+                            <span class="user-role">{{ user.get_role_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Query Details</h2>
+                </div>
+                
+                <div class="query-details-box">
+                    <div class="detail-row">
+                        <span class="label">Query Type:</span>
+                        <span class="value badge-query">{{ query.get_query_type_display }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Student:</span>
+                        <span class="value">{{ query.student.get_full_name }} ({{ query.student.usn }})</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Route:</span>
+                        <span class="value">{{ query.route.route_number }} - {{ query.route.name }}</span>
+                    </div>
+                    {% if query.bus_stop %}
+                    <div class="detail-row">
+                        <span class="label">Bus Stop:</span>
+                        <span class="value badge-stop">📍 {{ query.bus_stop.stop_name }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="detail-row">
+                        <span class="label">Submitted:</span>
+                        <span class="value">{{ query.created_at|date:"M d, Y - h:i A" }}</span>
+                    </div>
+                    {% if query.additional_message %}
+                    <div class="detail-row full-width">
+                        <span class="label">Additional Details:</span>
+                        <p class="message-box">{{ query.additional_message }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Your Response</h2>
+                </div>
+                
+                <form method="post" class="answer-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.answer.id_for_label }}">Type your response <span class="required">*</span></label>
+                        {{ form.answer }}
+                        {% if form.answer.errors %}
+                        <span class="error">{{ form.answer.errors.0 }}</span>
+                        {% endif %}
+                        <small class="help-text">Provide a clear and helpful response to the student's query.</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">
+                            <span>✅</span>
+                            <span>Submit Response</span>
+                        </button>
+                        <a href="{% url 'core:notifications_list' %}" class="btn-cancel">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .query-details-box {
+            padding: 2rem;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row.full-width {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #6b7280;
+            min-width: 150px;
+        }
+
+        .value {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .badge-query {
+            padding: 0.375rem 0.875rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .badge-stop {
+            padding: 0.375rem 0.875rem;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .message-box {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0 0 0;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .answer-form {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 150px;
+            font-family: inherit;
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 0.375rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .error {
+            display: block;
+            margin-top: 0.375rem;
+            color: #dc2626;
+            font-size: 0.875rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-submit {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 2rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-cancel {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.875rem 2rem;
+            background: #f3f4f6;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        /* Sidebar Profile Styles */
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-avatar,
+        .sidebar-avatar-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-avatar {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-avatar-img {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            font-size: 0.938rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.813rem;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Sidebar Navigation Enhancement */
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #f0f9ff;
+            border-left-color: #3b82f6;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+            border-left-color: #2563eb;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+    </style>
+    
+    <script>
+    </script>
+</body>
+</html>

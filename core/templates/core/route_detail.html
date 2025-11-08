@@ -1,0 +1,489 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ route.name }} - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .route-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .route-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .route-number {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .route-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-icon {
+            font-size: 1.5rem;
+        }
+
+        .info-content h4 {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-content p {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .stops-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stops-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+        }
+
+        .stop-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .stop-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stop-item:last-child {
+            border-color: #48bb78;
+            background: linear-gradient(to right, rgba(72, 187, 120, 0.05), transparent);
+        }
+
+        .stop-order {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .stop-item:last-child .stop-order {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .stop-details {
+            flex: 1;
+        }
+
+        .stop-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .stop-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #718096;
+        }
+
+        .meta-icon {
+            font-size: 1rem;
+        }
+
+        .stop-fare {
+            flex-shrink: 0;
+            text-align: right;
+        }
+
+        .fare-label {
+            font-size: 0.875rem;
+            color: #718096;
+            margin-bottom: 0.25rem;
+        }
+
+        .fare-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .registration-status {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 42px;
+            top: 70px;
+            bottom: -30px;
+            width: 2px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            z-index: -1;
+        }
+
+        .stops-wrapper {
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .route-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stop-item {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stop-fare {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+
+            <!-- User Profile in Sidebar -->
+            <div class="sidebar-profile">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" class="sidebar-avatar-img">
+                {% else %}
+                    <div class="sidebar-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                {% endif %}
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{% url 'core:dashboard' %}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'core:routes_list' %}" class="nav-item active">
+                    <span class="nav-icon">🚌</span>
+                    <span>Browse Routes</span>
+                </a>
+                {% if user.role == 'student' %}
+                <a href="{% url 'core:my_registration' %}" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span>My Registration</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                {% if user.role == 'student' %}
+                <a href="{% url 'core:student_queries' %}" class="nav-item">
+                    <span class="nav-icon">💬</span>
+                    <span>My Queries</span>
+                </a>
+                {% endif %}
+                {% if user.role == 'admin' %}
+                <a href="{% url 'core:create_notification' %}" class="nav-item">
+                    <span class="nav-icon">📢</span>
+                    <span>Create Notification</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'core:edit_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </a>
+                <a href="{% url 'core:logout' %}" class="nav-item">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <h1 class="page-title">Route Details</h1>
+                    <p class="page-subtitle">Complete information about this bus route</p>
+                </div>
+            </div>
+
+            <div class="content-body">
+                {% if user_registration %}
+                <div class="registration-status">
+                    <span class="status-icon">✅</span>
+                    <div>
+                        <h3 style="margin: 0 0 0.25rem 0;">You are registered for this route</h3>
+                        <p style="margin: 0; opacity: 0.9;">Boarding Stop: {{ user_registration.bus_stop.stop_name }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Route Header -->
+                <div class="route-header">
+                    <div class="route-number">{{ route.route_number }}</div>
+                    <h2 class="route-title">{{ route.name }}</h2>
+                    <p style="opacity: 0.9; margin-bottom: 0;">{{ route.description }}</p>
+
+                    <div class="route-info-grid">
+                        <div class="info-item">
+                            <span class="info-icon">🚌</span>
+                            <div class="info-content">
+                                <h4>Bus Number</h4>
+                                <p>{{ route.bus_number }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">👨‍✈️</span>
+                            <div class="info-content">
+                                <h4>Driver</h4>
+                                <p>{{ route.driver.get_full_name|default:"Not Assigned" }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">⏰</span>
+                            <div class="info-content">
+                                <h4>Departure</h4>
+                                <p>{{ route.departure_time|time:"g:i A" }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">🏁</span>
+                            <div class="info-content">
+                                <h4>Arrival</h4>
+                                <p>{{ route.arrival_time|time:"g:i A" }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">💺</span>
+                            <div class="info-content">
+                                <h4>Available Seats</h4>
+                                <p>{{ available_seats }}/{{ route.capacity }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">📍</span>
+                            <div class="info-content">
+                                <h4>Total Stops</h4>
+                                <p>{{ stops.count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bus Stops -->
+                <div class="stops-container">
+                    <h3 class="stops-title">Bus Stops ({{ stops.count }})</h3>
+                    
+                    <div class="stops-wrapper">
+                        {% for stop in stops %}
+                        <div class="stop-item">
+                            {% if not forloop.last %}
+                            <div class="timeline-line"></div>
+                            {% endif %}
+                            
+                            <div class="stop-order">{{ stop.stop_order }}</div>
+                            
+                            <div class="stop-details">
+                                <div class="stop-name">
+                                    {{ stop.stop_name }}
+                                    {% if forloop.last %}
+                                    <span style="color: #48bb78; font-weight: 700;">🎯 Destination</span>
+                                    {% endif %}
+                                </div>
+                                <div class="stop-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-icon">⏰</span>
+                                        <span>{{ stop.pickup_time|time:"g:i A" }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-icon">📏</span>
+                                        <span>{{ stop.distance_from_sjb }} km from SJB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stop-fare">
+                                <div class="fare-label">Monthly Fare</div>
+                                <div class="fare-amount">₹{{ stop.base_fare|floatformat:0 }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        {% if user.role == 'student' %}
+                            {% if not user_registration %}
+                                {% if available_seats > 0 %}
+                                <a href="{% url 'core:register_route' %}" class="btn btn-primary">
+                                    <span>📝</span>
+                                    Register for this Route
+                                </a>
+                                {% else %}
+                                <button class="btn btn-secondary" disabled>
+                                    <span>🚫</span>
+                                    No Seats Available
+                                </button>
+                                {% endif %}
+                            {% else %}
+                            <a href="{% url 'core:my_registration' %}" class="btn btn-primary">
+                                <span>📋</span>
+                                View My Registration
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <a href="{% url 'core:routes_list' %}" class="btn btn-secondary">
+                            <span>←</span>
+                            Back to Routes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <div class="mobile-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.body.classList.toggle('sidebar-open');
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+    </script>
+</body>
+</html>

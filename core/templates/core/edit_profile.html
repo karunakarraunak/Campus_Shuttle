@@ -1,0 +1,919 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+        <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+
+            <!-- User Profile in Sidebar -->
+            <div class="sidebar-profile">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" class="sidebar-avatar-img">
+                {% else %}
+                    <div class="sidebar-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                {% endif %}
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{% url 'core:dashboard' %}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+
+                {% if user.role == 'student' %}
+                <a href="{% url 'core:routes_list' %}" class="nav-item">
+                    <span class="nav-icon">🚌</span>
+                    <span>Browse Routes</span>
+                </a>
+                <a href="{% url 'core:my_registration' %}" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span>My Registration</span>
+                </a>
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:student_queries' %}" class="nav-item">
+                    <span class="nav-icon">❓</span>
+                    <span>My Queries</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item active">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+                {% elif user.role == 'driver' %}
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item active">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+                {% elif user.role == 'admin' %}
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item active">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+                <a href="/admin/" class="nav-item" target="_blank">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Admin Panel</span>
+                </a>
+                {% endif %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{% url 'core:logout' %}" class="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">`
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h1>Edit Profile</h1>
+                    <p>Update your personal information and profile picture</p>
+                </div>
+
+                <div class="user-profile">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="Profile" class="profile-avatar">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                    <div class="user-info">
+                        <div class="user-name">{{ user.get_full_name }}</div>
+                        <div class="user-role">{{ user.get_role_display }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Profile Edit Form -->
+            <div class="profile-edit-container">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" class="profile-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="update_profile" value="1">
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="profile-picture-section">
+                            <div class="current-picture">
+                                {% if user.profile_image %}
+                                    <img src="{{ user.profile_image.url }}" alt="Profile" id="profilePreview">
+                                {% else %}
+                                    <div class="no-picture" id="profilePreview">
+                                        <i class="fas fa-user fa-4x"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="picture-upload">
+                                <label for="{{ profile_form.profile_image.id_for_label }}" class="upload-label">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Change Profile Picture</span>
+                                </label>
+                                {{ profile_form.profile_image }}
+                                <p class="help-text">Recommended: Square image, at least 200x200px</p>
+                            </div>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ profile_form.first_name.id_for_label }}">
+                                    <i class="fas fa-user"></i> First Name *
+                                </label>
+                                {{ profile_form.first_name }}
+                                {% if profile_form.first_name.errors %}
+                                    <span class="error-message">{{ profile_form.first_name.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ profile_form.last_name.id_for_label }}">
+                                    <i class="fas fa-user"></i> Last Name *
+                                </label>
+                                {{ profile_form.last_name }}
+                                {% if profile_form.last_name.errors %}
+                                    <span class="error-message">{{ profile_form.last_name.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ profile_form.email.id_for_label }}">
+                                    <i class="fas fa-envelope"></i> Email Address *
+                                </label>
+                                {{ profile_form.email }}
+                                {% if profile_form.email.errors %}
+                                    <span class="error-message">{{ profile_form.email.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ profile_form.phone_number.id_for_label }}">
+                                    <i class="fas fa-phone"></i> Phone Number
+                                </label>
+                                {{ profile_form.phone_number }}
+                                {% if profile_form.phone_number.errors %}
+                                    <span class="error-message">{{ profile_form.phone_number.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ profile_form.gender.id_for_label }}">
+                                    <i class="fas fa-venus-mars"></i> Gender
+                                </label>
+                                {{ profile_form.gender }}
+                                {% if profile_form.gender.errors %}
+                                    <span class="error-message">{{ profile_form.gender.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if user.role == 'student' %}
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-id-card"></i> USN
+                                </label>
+                                <input type="text" class="form-input" value="{{ user.usn }}" disabled>
+                                <p class="help-text">USN cannot be changed</p>
+                            </div>
+                            {% elif user.role == 'driver' %}
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-id-badge"></i> Employee Number
+                                </label>
+                                <input type="text" class="form-input" value="{{ user.emp_no }}" disabled>
+                                <p class="help-text">Employee number cannot be changed</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-actions">
+                            <a href="{% url 'core:dashboard' %}" class="btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Account Information Card -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-info-circle"></i> Account Information</h3>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <span class="info-label">Username:</span>
+                            <span class="info-value">{{ user.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Role:</span>
+                            <span class="info-value">{{ user.get_role_display }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Member Since:</span>
+                            <span class="info-value">{{ user.created_at|date:"F d, Y" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Updated:</span>
+                            <span class="info-value">{{ user.updated_at|date:"F d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Change Card -->
+                <div class="profile-card password-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-lock"></i> Change Password</h2>
+                    </div>
+
+                    <form method="POST" class="password-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="change_password" value="1">
+                        
+                        <div class="password-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <p>For your security, please use a strong password that you don't use elsewhere.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ password_form.current_password.id_for_label }}">
+                                <i class="fas fa-key"></i> Current Password *
+                            </label>
+                            {{ password_form.current_password }}
+                            {% if password_form.current_password.errors %}
+                                <span class="error-message">{{ password_form.current_password.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ password_form.new_password.id_for_label }}">
+                                <i class="fas fa-lock"></i> New Password *
+                            </label>
+                            {{ password_form.new_password }}
+                            {% if password_form.new_password.errors %}
+                                <span class="error-message">{{ password_form.new_password.errors.0 }}</span>
+                            {% endif %}
+                            <p class="help-text">{{ password_form.new_password.help_text }}</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ password_form.confirm_password.id_for_label }}">
+                                <i class="fas fa-check-circle"></i> Confirm New Password *
+                            </label>
+                            {{ password_form.confirm_password }}
+                            {% if password_form.confirm_password.errors %}
+                                <span class="error-message">{{ password_form.confirm_password.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if password_form.non_field_errors %}
+                        <div class="non-field-errors">
+                            {% for error in password_form.non_field_errors %}
+                            <span class="error-message"><i class="fas fa-exclamation-triangle"></i> {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-password">
+                                <i class="fas fa-lock"></i> Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Profile picture preview
+        const profileInput = document.getElementById('{{ profile_form.profile_image.id_for_label }}');
+        const profilePreview = document.getElementById('profilePreview');
+
+        profileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (profilePreview.tagName === 'IMG') {
+                        profilePreview.src = e.target.result;
+                    } else {
+                        // Replace placeholder with image
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Profile Preview';
+                        img.id = 'profilePreview';
+                        profilePreview.parentNode.replaceChild(img, profilePreview);
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(function() {
+            const messages = document.querySelectorAll('.alert');
+            messages.forEach(function(message) {
+                message.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(function() {
+                    message.remove();
+                }, 300);
+            });
+        }, 5000);
+    </script>
+
+    <style>
+        @keyframes slideOut {
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .messages-container {
+            margin-bottom: 2rem;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .profile-edit-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            max-width: 1400px;
+        }
+
+        .profile-card, .info-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .card-header h2, .card-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .profile-form {
+            padding: 2rem;
+        }
+
+        .profile-picture-section {
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .current-picture {
+            flex-shrink: 0;
+        }
+
+        .current-picture img,
+        .current-picture .no-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .current-picture .no-picture {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .picture-upload {
+            flex: 1;
+        }
+
+        .upload-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        #{{ form.profile_image.id_for_label }} {
+            display: none;
+        }
+
+        .help-text {
+            margin-top: 0.5rem;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-input {
+            padding: 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 0.875rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .info-content {
+            padding: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-value {
+            color: #334155;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Password Change Styles */
+        .password-card {
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+
+        .password-card .card-header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            padding: 1.5rem 2rem;
+        }
+
+        .password-card .card-header h2 {
+            color: white;
+        }
+
+        .password-form {
+            padding: 2rem;
+        }
+
+        .password-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .password-info i {
+            font-size: 1.5rem;
+            color: #d97706;
+        }
+
+        .password-info p {
+            color: #92400e;
+            margin: 0;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .password-form .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .password-form .form-group:last-of-type {
+            margin-bottom: 2rem;
+        }
+
+        .password-form .form-actions {
+            padding-top: 2rem;
+            border-top: 2px solid #fef3c7;
+            margin-top: 1rem;
+        }
+
+        .btn-password {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-password:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+
+        .btn-password:active {
+            transform: translateY(0);
+        }
+
+        .non-field-errors {
+            background: #fee2e2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ef4444;
+        }
+
+        .non-field-errors .error-message {
+            display: block;
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .profile-edit-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-picture-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .password-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Sidebar Toggle Styles */
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--background);
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .brand-name,
+        .sidebar.collapsed .sidebar-user-info,
+        .sidebar.collapsed .nav-item span:not(.nav-icon),
+        .sidebar.collapsed .logout-btn span:not(.nav-icon) {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-profile {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar.collapsed .nav-item,
+        .sidebar.collapsed .logout-btn {
+            justify-content: center;
+        }
+
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-avatar,
+        .sidebar-avatar-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-avatar {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-avatar-img {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            font-size: 0.938rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.813rem;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Sidebar Navigation Enhancement */
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #f0f9ff;
+            border-left-color: #3b82f6;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+            border-left-color: #2563eb;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile image preview
+            const profileImageInput = document.querySelector('input[type="file"][name="profile_image"]');
+            if (profileImageInput) {
+                profileImageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.getElementById('profilePreview');
+                            if (preview.tagName === 'IMG') {
+                                preview.src = e.target.result;
+                            } else {
+                                preview.innerHTML = `<img src="${e.target.result}" alt="Profile Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

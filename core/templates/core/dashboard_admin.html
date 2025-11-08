@@ -1,0 +1,891 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        ☰
+    </button>
+    
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+
+            <!-- User Profile in Sidebar -->
+            <div class="sidebar-profile">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" class="sidebar-avatar-img">
+                {% else %}
+                    <div class="sidebar-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                {% endif %}
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{% url 'core:dashboard' %}" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+                <a href="/admin/" class="nav-item" target="_blank">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Admin Panel</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{% url 'core:logout' %}" class="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Admin Dashboard</h1>
+                    <p>Welcome back, {{ user.first_name }}!</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile" class="user-avatar-img">
+                        {% else %}
+                            <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                        {% endif %}
+                        <div class="user-info">
+                            <span class="user-name">{{ user.get_full_name }}</span>
+                            <span class="user-role">Administrator</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Alert for Pending Registrations -->
+            {% if pending_registrations > 0 %}
+            <div class="alert-banner">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <h3>Pending Approvals</h3>
+                    <p>You have <strong>{{ pending_registrations }}</strong> pending registration{{ pending_registrations|pluralize }} waiting for approval. 
+                    <a href="/admin/core/routeregistration/?status__exact=pending" class="alert-link">Review now →</a></p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dbeafe;">
+                        <span style="color: #2563eb;">🚌</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Total Routes</span>
+                        <span class="stat-value">{{ total_routes }}</span>
+                        <span class="stat-change">Active routes</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dcfce7;">
+                        <span style="color: #16a34a;">🎓</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Registered Students</span>
+                        <span class="stat-value">{{ total_students }}</span>
+                        <span class="stat-change">Active registrations</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fef3c7;">
+                        <span style="color: #ca8a04;">👨‍✈️</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Total Drivers</span>
+                        <span class="stat-value">{{ total_drivers }}</span>
+                        <span class="stat-change">Registered drivers</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fee2e2;">
+                        <span style="color: #dc2626;">⏳</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Pending Approvals</span>
+                        <span class="stat-value">{{ pending_registrations }}</span>
+                        <span class="stat-change">Awaiting review</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications & Alerts Section -->
+            <div class="content-grid notifications-section">
+                <!-- Unresolved Queries Alert -->
+                {% if unresolved_queries_count > 0 %}
+                <div class="card alert-card-admin">
+                    <div class="card-header alert-header">
+                        <h2>⚠️ Unanswered Student Queries</h2>
+                        <span class="alert-badge">{{ unresolved_queries_count }}</span>
+                    </div>
+                    <div class="alert-content-admin">
+                        <p>There are <strong>{{ unresolved_queries_count }}</strong> student quer{{ unresolved_queries_count|pluralize:"y,ies" }} waiting for response.</p>
+                        <div class="alert-actions">
+                            <a href="{% url 'core:notifications_list' %}" class="btn-primary-admin">View Queries</a>
+                            <a href="{% url 'core:create_notification' %}" class="btn-secondary-admin">Send Announcement</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Recent Notifications -->
+                {% if recent_notifications %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📢 System Notifications</h2>
+                        <a href="{% url 'core:notifications_list' %}" class="view-all-link-admin">View All →</a>
+                    </div>
+                    <div class="notifications-list-admin">
+                        {% for notification in recent_notifications %}
+                        <div class="notification-item-admin">
+                            <div class="notification-header-admin">
+                                <div class="notification-icon-admin">
+                                    {% if notification.message_type == 'delay' %}⏰
+                                    {% elif notification.message_type == 'arrival' %}✅
+                                    {% elif notification.message_type == 'route_change' %}🔄
+                                    {% elif notification.message_type == 'emergency' %}🚨
+                                    {% else %}📢
+                                    {% endif %}
+                                </div>
+                                <div class="notification-meta">
+                                    <h4>{{ notification.title }}</h4>
+                                    <span class="notification-sender">By: {{ notification.sender.get_full_name|default:notification.sender.username }}</span>
+                                </div>
+                            </div>
+                            <p class="notification-message-admin">{{ notification.message|truncatewords:20 }}</p>
+                            <div class="notification-footer-admin">
+                                <span class="notification-time-admin">{{ notification.created_at|timesince }} ago</span>
+                                {% if notification.bus_route %}
+                                <span class="notification-route">Route: {{ notification.bus_route.route_number }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Admin Quick Actions for Notifications -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>⚡ Notification Actions</h2>
+                    </div>
+                    <div class="admin-notification-actions">
+                        <a href="{% url 'core:create_notification' %}" class="action-btn-admin create-btn">
+                            <span class="action-icon-admin">📣</span>
+                            <div class="action-text-admin">
+                                <h4>Create Announcement</h4>
+                                <p>Send system-wide notification to all users</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'core:notifications_list' %}" class="action-btn-admin queries-btn">
+                            <span class="action-icon-admin">💬</span>
+                            <div class="action-text-admin">
+                                <h4>Manage Queries</h4>
+                                <p>View and respond to all student queries</p>
+                                {% if unresolved_queries_count > 0 %}
+                                <span class="badge-count-admin">{{ unresolved_queries_count }} pending</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                        <a href="{% url 'core:notifications_list' %}" class="action-btn-admin history-btn">
+                            <span class="action-icon-admin">📋</span>
+                            <div class="action-text-admin">
+                                <h4>Notification History</h4>
+                                <p>View all notifications and system alerts</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity / System Info -->
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>System Summary</h2>
+                    </div>
+                    <div class="system-info">
+                        <div class="info-item">
+                            <span class="info-icon">🚌</span>
+                            <div class="info-details">
+                                <span class="info-label">Active Routes</span>
+                                <span class="info-value">{{ total_routes }} routes operating</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">🎓</span>
+                            <div class="info-details">
+                                <span class="info-label">Student Registrations</span>
+                                <span class="info-value">{{ total_students }} active registrations</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">👨‍✈️</span>
+                            <div class="info-details">
+                                <span class="info-label">Drivers</span>
+                                <span class="info-value">{{ total_drivers }} drivers in system</span>
+                            </div>
+                        </div>
+                        {% if pending_registrations > 0 %}
+                        <div class="info-item highlight">
+                            <span class="info-icon">⏳</span>
+                            <div class="info-details">
+                                <span class="info-label">Pending Approvals</span>
+                                <span class="info-value">{{ pending_registrations }} registration{{ pending_registrations|pluralize }} need{{ pending_registrations|pluralize:"s," }} review</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Admin Notes</h2>
+                    </div>
+                    <div class="notes-content">
+                        <h3>Key Responsibilities:</h3>
+                        <ul class="admin-checklist">
+                            <li>✅ Review and approve student registrations</li>
+                            <li>✅ Assign drivers to routes (one driver per route)</li>
+                            <li>✅ Monitor route capacity and availability</li>
+                            <li>✅ Manage bus routes and stops</li>
+                            <li>✅ Handle system configuration</li>
+                        </ul>
+                        
+                        <h3>Business Rules:</h3>
+                        <ul class="admin-checklist">
+                            <li>🔒 Only admins can approve registrations</li>
+                            <li>🔒 Students can register for only one route</li>
+                            <li>🔒 Each route can have only one driver</li>
+                            <li>🔒 Route capacity is enforced automatically</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .alert-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+        }
+
+        .alert-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-content p {
+            color: #78350f;
+            margin: 0;
+        }
+
+        .alert-link {
+            color: #b45309;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 2px solid #b45309;
+            transition: all 0.2s ease;
+        }
+
+        .alert-link:hover {
+            color: #92400e;
+            border-bottom-color: #92400e;
+        }
+
+        .system-info {
+            padding: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s ease;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-item:hover {
+            background: #f9fafb;
+        }
+
+        .info-item.highlight {
+            background: #fef3c7;
+            border-radius: 8px;
+            border: 1px solid #fde68a;
+        }
+
+        .info-icon {
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .info-details {
+            flex: 1;
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .notes-content {
+            padding: 1.5rem;
+        }
+
+        .notes-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .notes-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .admin-checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .admin-checklist li {
+            padding: 0.5rem 0;
+            color: #4b5563;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Admin Notifications Section Styles */
+        .notifications-section {
+            margin-bottom: 2rem;
+        }
+
+        .alert-card-admin {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            animation: alertPulse 2s infinite;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+            50% { transform: scale(1.01); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4); }
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-badge {
+            background: #dc2626;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .alert-content-admin {
+            padding: 1.5rem;
+        }
+
+        .alert-content-admin p {
+            font-size: 1.125rem;
+            color: #7f1d1d;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-admin {
+            background: #dc2626;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary-admin:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-secondary-admin {
+            background: white;
+            color: #dc2626;
+            border: 2px solid #dc2626;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-secondary-admin:hover {
+            background: #dc2626;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+
+        .notifications-list-admin {
+            padding: 1rem;
+        }
+
+        .notification-item-admin {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+        }
+
+        .notification-item-admin:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .notification-header-admin {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .notification-icon-admin {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+        }
+
+        .notification-meta {
+            flex: 1;
+        }
+
+        .notification-meta h4 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-sender {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .notification-message-admin {
+            font-size: 0.9375rem;
+            color: #4b5563;
+            line-height: 1.6;
+            margin: 0.75rem 0;
+            padding-left: 64px;
+        }
+
+        .notification-footer-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 64px;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .notification-time-admin {
+            font-size: 0.8125rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .notification-route {
+            font-size: 0.8125rem;
+            color: #6b7280;
+            font-weight: 600;
+            background: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+        }
+
+        .view-all-link-admin {
+            color: #3b82f6;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .view-all-link-admin:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .admin-notification-actions {
+            display: grid;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .action-btn-admin {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn-admin.create-btn {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .action-btn-admin.create-btn:hover {
+            border-color: #3b82f6;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-btn-admin.queries-btn {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .action-btn-admin.queries-btn:hover {
+            border-color: #f59e0b;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .action-btn-admin.history-btn {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        }
+
+        .action-btn-admin.history-btn:hover {
+            border-color: #6366f1;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-icon-admin {
+            font-size: 2.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 70px;
+        }
+
+        .action-text-admin h4 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.375rem;
+        }
+
+        .action-text-admin p {
+            font-size: 0.9375rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .badge-count-admin {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            padding: 0.375rem 1rem;
+            border-radius: 16px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            margin-top: 0.625rem;
+            animation: adminBadgeBounce 1.5s infinite;
+        }
+
+        @keyframes adminBadgeBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @media (max-width: 768px) {
+            .alert-actions {
+                flex-direction: column;
+            }
+
+            .btn-primary-admin,
+            .btn-secondary-admin {
+                text-align: center;
+                width: 100%;
+            }
+
+            .notification-header-admin {
+                flex-wrap: wrap;
+            }
+
+            .notification-message-admin,
+            .notification-footer-admin {
+                padding-left: 0;
+            }
+
+            .admin-notification-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .action-btn-admin {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Sidebar Toggle Styles */
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--background);
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .brand-name,
+        .sidebar.collapsed .sidebar-user-info,
+        .sidebar.collapsed .nav-item span:not(.nav-icon),
+        .sidebar.collapsed .logout-btn span:not(.nav-icon) {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-profile {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .sidebar-avatar,
+        .sidebar.collapsed .sidebar-avatar-img {
+            margin: 0 auto;
+        }
+
+        .sidebar.collapsed .nav-item,
+        .sidebar.collapsed .logout-btn {
+            justify-content: center;
+        }
+
+        /* Sidebar Profile Styles */
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-avatar,
+        .sidebar-avatar-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-avatar {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-avatar-img {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            font-size: 0.938rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.813rem;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Adjust main content when sidebar is collapsed */
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+    </style>
+    
+    <script>
+        // Mobile Menu Toggle Functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('active');
+                
+                // Change icon
+                if (sidebar.classList.contains('mobile-open')) {
+                    mobileMenuToggle.textContent = '✕';
+                } else {
+                    mobileMenuToggle.textContent = '☰';
+                }
+            });
+            
+            // Close menu when clicking overlay
+            mobileOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('active');
+                mobileMenuToggle.textContent = '☰';
+            });
+            
+            // Close menu when clicking a nav link
+            const navLinks = sidebar.querySelectorAll('.nav-item, .logout-btn');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 1024) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileOverlay.classList.remove('active');
+                        mobileMenuToggle.textContent = '☰';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+

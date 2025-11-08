@@ -1,0 +1,203 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusShuttle - College Transportation System</title>
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#routes">Routes</a></li>
+                <li><a href="#schedule">Schedule</a></li>
+                <li><a href="{% url 'core:login' %}" class="btn-login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Your Campus, <span class="highlight">On Time</span>
+                </h1>
+                <p class="hero-description">
+                    Safe, reliable, and convenient transportation connecting students, faculty, and staff across campus and beyond.
+                </p>
+                <div class="hero-buttons">
+                    <a href="{% url 'core:signup' %}" class="btn btn-primary">Register Now</a>
+                    <a href="#features" class="btn btn-secondary">View Schedule</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-card card-1">
+                    <div class="card-icon">�</div>
+                    <div class="card-text">
+                        <span class="card-label">Daily Rides</span>
+                        <span class="card-value">2,500+</span>
+                    </div>
+                </div>
+                <div class="visual-card card-2">
+                    <div class="card-icon">🎓</div>
+                    <div class="card-text">
+                        <span class="card-label">Students Served</span>
+                        <span class="card-value">3,200</span>
+                    </div>
+                </div>
+                <div class="visual-card card-3">
+                    <div class="card-icon">�️</div>
+                    <div class="card-text">
+                        <span class="card-label">Active Routes</span>
+                        <span class="card-value">12</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose CampusShuttle?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">�</div>
+                    <h3>Real-Time Tracking</h3>
+                    <p>Track your bus location in real-time and know exactly when it will arrive.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">�</div>
+                    <h3>Punctual Service</h3>
+                    <p>Reliable schedules ensuring you never miss a class or important event.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Smart Alerts</h3>
+                    <p>Get notified about schedule changes, delays, and route updates instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Safe & Secure</h3>
+                    <p>Professional drivers, well-maintained buses, and 24/7 safety monitoring.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">�</div>
+                    <h3>Easy Booking</h3>
+                    <p>Simple online booking and payment system with student discounts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Campus Wide Coverage</h3>
+                    <p>Multiple routes connecting all campus buildings and nearby areas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">98%</div>
+                    <div class="stat-label">On-Time Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">3,200+</div>
+                    <div class="stat-label">Students</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Service</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">15+</div>
+                    <div class="stat-label">Routes Daily</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Join CampusShuttle?</h2>
+                <p>Register now and enjoy convenient, reliable transportation across campus.</p>
+                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-large">Register Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="nav-brand">
+                        <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                            <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                            <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                        </svg>
+                        <span class="brand-name">CampusShuttle</span>
+                    </div>
+                    <p class="footer-description">Connecting our campus community, one ride at a time.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Services</h4>
+                        <ul>
+                            <li><a href="#">Routes & Schedule</a></li>
+                            <li><a href="#">Pricing</a></li>
+                            <li><a href="#">Safety</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>About</h4>
+                        <ul>
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">News</a></li>
+                            <li><a href="#">Careers</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <ul>
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">FAQs</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 CampusShuttle. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    
+    <script src="{% static 'core/js/main.js' %}"></script>
+</body>
+</html>

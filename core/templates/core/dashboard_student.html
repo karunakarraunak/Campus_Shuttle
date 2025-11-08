@@ -1,0 +1,938 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        ☰
+    </button>
+    
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+
+            <!-- User Profile in Sidebar -->
+            <div class="sidebar-profile">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" class="sidebar-avatar-img">
+                {% else %}
+                    <div class="sidebar-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                {% endif %}
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{% url 'core:dashboard' %}" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'core:routes_list' %}" class="nav-item">
+                    <span class="nav-icon">🚌</span>
+                    <span>Browse Routes</span>
+                </a>
+                <a href="{% url 'core:my_registration' %}" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span>My Registration</span>
+                </a>
+                <a href="{% url 'core:track_bus' %}" class="nav-item">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                <a href="{% url 'core:student_queries' %}" class="nav-item">
+                    <span class="nav-icon">❓</span>
+                    <span>My Queries</span>
+                </a>
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{% url 'core:logout' %}" class="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Student Dashboard</h1>
+                    <p>Welcome back, {{ user.first_name }}!</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile" class="user-avatar-img">
+                        {% else %}
+                            <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                        {% endif %}
+                        <div class="user-info">
+                            <span class="user-name">{{ user.get_full_name }}</span>
+                            <span class="user-role">Student</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                {% if registration %}
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dbeafe;">
+                        <span style="color: #2563eb;">🚌</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Registered Route</span>
+                        <span class="stat-value">{{ registration.route.route_number }}</span>
+                        <span class="stat-change">{{ registration.route.name }}</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dcfce7;">
+                        <span style="color: #16a34a;">📅</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Pickup Time</span>
+                        <span class="stat-value">{{ registration.bus_stop.pickup_time|time:"h:i A" }}</span>
+                        <span class="stat-change">Daily</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fef3c7;">
+                        <span style="color: #ca8a04;">📍</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Your Stop</span>
+                        <span class="stat-value">{{ registration.bus_stop.stop_name|truncatewords:3 }}</span>
+                        <span class="stat-change">{{ registration.bus_stop.distance_from_sjb }} km from SJB</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fce7f3;">
+                        <span style="color: #db2777;">💳</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Monthly Fee</span>
+                        <span class="stat-value">₹{{ registration.monthly_fee }}</span>
+                        <span class="stat-change status-{{ registration.payment_status }}">{{ registration.get_payment_status_display }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dbeafe;">
+                        <span style="color: #2563eb;">🚌</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Route Status</span>
+                        <span class="stat-value">Not Registered</span>
+                        <span class="stat-change">Register for a route</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dcfce7;">
+                        <span style="color: #16a34a;">📍</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Available Routes</span>
+                        <span class="stat-value">4</span>
+                        <span class="stat-change">Covering Bangalore</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fef3c7;">
+                        <span style="color: #ca8a04;">⭐</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Benefits</span>
+                        <span class="stat-value">Safe & Reliable</span>
+                        <span class="stat-change">Daily Transport</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fce7f3;">
+                        <span style="color: #db2777;">💰</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Fee Range</span>
+                        <span class="stat-value">₹1500-3200</span>
+                        <span class="stat-change">Per Month</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if not registration %}
+            <!-- Call to Action -->
+            <div class="cta-banner">
+                <div class="cta-content">
+                    <h3>🚌 Register for a Bus Route</h3>
+                    <p>Choose from 4 routes covering North, East, South, and West Bangalore with over 40 stops!</p>
+                </div>
+                <a href="{% url 'core:register_route' %}" class="btn-primary">View Routes & Register</a>
+            </div>
+            {% else %}
+            <!-- Content Grid - Only show when registered -->
+            <div class="content-grid">
+                <!-- Bus Schedule -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Your Bus Schedule</h2>
+                        <span class="status-badge status-{{ registration.status }}">{{ registration.get_status_display }}</span>
+                    </div>
+                    {% if registration.status == 'active' %}
+                    <div class="schedule-list">
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <span class="time">{{ registration.bus_stop.pickup_time|time:"g:i A" }}</span>
+                                <span class="period">Morning Pickup</span>
+                            </div>
+                            <div class="schedule-details">
+                                <h3>{{ registration.bus_stop.stop_name }}</h3>
+                                <p>{{ registration.route.route_number }} - {{ registration.route.name }}</p>
+                                <span class="bus-number">Bus #{{ registration.route.bus_number }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <span class="time">{{ registration.route.departure_time|time:"g:i A" }}</span>
+                                <span class="period">Evening Return</span>
+                            </div>
+                            <div class="schedule-details">
+                                <h3>SJB Institute of Technology</h3>
+                                <p>Return journey to {{ registration.bus_stop.stop_name }}</p>
+                                <span class="bus-number">Bus #{{ registration.route.bus_number }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif registration.status == 'pending' %}
+                    <div class="pending-message">
+                        <div class="pending-icon">⏳</div>
+                        <h3>Registration Pending Approval</h3>
+                        <p>Your route registration is waiting for admin approval. You'll be notified once it's approved.</p>
+                        <a href="{% url 'core:cancel_registration' registration.id %}" class="btn-cancel">Cancel Registration</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Route Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Route Information</h2>
+                    </div>
+                    <div class="route-info-content">
+                        <div class="info-row">
+                            <span class="info-label">Route:</span>
+                            <span class="info-value">{{ registration.route.route_number }} - {{ registration.route.name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Driver:</span>
+                            <span class="info-value">{{ registration.route.driver.get_full_name|default:"Not Assigned" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Bus Number:</span>
+                            <span class="info-value">{{ registration.route.bus_number }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Your Stop:</span>
+                            <span class="info-value">{{ registration.bus_stop.stop_name }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Distance:</span>
+                            <span class="info-value">{{ registration.bus_stop.distance_from_sjb }} km from SJB</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Monthly Fee:</span>
+                            <span class="info-value fee">₹{{ registration.monthly_fee }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Payment Status:</span>
+                            <span class="info-value status-{{ registration.payment_status }}">{{ registration.get_payment_status_display }}</span>
+                        </div>
+                        {% if registration.status == 'active' %}
+                        <div class="route-actions">
+                            <a href="{% url 'core:cancel_registration' registration.id %}" class="btn-cancel-registration">Cancel Registration</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Notifications -->
+            {% if recent_notifications %}
+            <div class="card">
+                <div class="card-header">
+                    <h2>📢 Recent Notifications</h2>
+                    <a href="{% url 'core:notifications_list' %}" class="view-all-link">View All →</a>
+                </div>
+                <div class="notifications-widget">
+                    {% for notification in recent_notifications %}
+                    <div class="notification-item-mini">
+                        <div class="notification-icon-mini">
+                            {% if notification.message_type == 'delay' %}⏰
+                            {% elif notification.message_type == 'arrival' %}✅
+                            {% elif notification.message_type == 'route_change' %}🔄
+                            {% elif notification.message_type == 'emergency' %}🚨
+                            {% else %}📢
+                            {% endif %}
+                        </div>
+                        <div class="notification-content-mini">
+                            <h4>{{ notification.title }}</h4>
+                            <p>{{ notification.message|truncatewords:20 }}</p>
+                            <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Announcements - Show for everyone -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Announcements</h2>
+                </div>
+                <div class="announcements-list">
+                    <div class="announcement-item">
+                        <div class="announcement-icon">📢</div>
+                        <div class="announcement-content">
+                            <h3>Route Change Notice</h3>
+                            <p>Route A will have a temporary diversion on Nov 10 due to road maintenance.</p>
+                            <span class="announcement-date">Posted 2 days ago</span>
+                        </div>
+                    </div>
+                    <div class="announcement-item">
+                        <div class="announcement-icon">🎉</div>
+                        <div class="announcement-content">
+                            <h3>New Bus Added</h3>
+                            <p>We've added a new air-conditioned bus to Route B for your comfort.</p>
+                            <span class="announcement-date">Posted 1 week ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .cta-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .cta-content p {
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        .cta-banner .btn-primary {
+            background: white;
+            color: #667eea;
+            padding: 0.875rem 2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-banner .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-paid {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .status-unpaid {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .status-partial {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        /* Enhanced Stat Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            border-color: #3b82f6;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .stat-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .stat-change {
+            font-size: 0.813rem;
+            color: #9ca3af;
+        }
+
+        /* Dashboard Header Enhancements */
+        .dashboard-header {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-left p {
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.938rem;
+        }
+
+        .user-role {
+            font-size: 0.813rem;
+            color: #6b7280;
+        }
+
+        /* Sidebar Enhancements */
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #f0f9ff;
+            border-left-color: #3b82f6;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+            border-left-color: #2563eb;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Content Cards Enhancement */
+        .content-grid > div {
+            transition: all 0.3s ease;
+        }
+
+        .content-grid > div:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Pending Message */
+        .pending-message {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .pending-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .pending-message h3 {
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .pending-message p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-cancel {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #fecaca;
+            transform: translateY(-2px);
+        }
+
+        /* Route Information */
+        .route-info-content {
+            padding: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.875rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #1f2937;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .info-value.fee {
+            color: #2563eb;
+            font-size: 1.125rem;
+        }
+
+        .info-value.status-paid {
+            color: #16a34a;
+        }
+
+        .info-value.status-unpaid {
+            color: #dc2626;
+        }
+
+        .route-actions {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f3f4f6;
+        }
+
+        .btn-cancel-registration {
+            display: block;
+            width: 100%;
+            padding: 0.875rem;
+            background: white;
+            color: #dc2626;
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel-registration:hover {
+            background: #dc2626;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Notifications Widget */
+        .view-all-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: color 0.2s ease;
+        }
+
+        .view-all-link:hover {
+            color: #764ba2;
+        }
+
+        .notifications-widget {
+            padding: 1rem;
+        }
+
+        .notification-item-mini {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .notification-item-mini:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transform: translateX(2px);
+        }
+
+        .notification-icon-mini {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content-mini {
+            flex: 1;
+        }
+
+        .notification-content-mini h4 {
+            font-size: 0.938rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .notification-content-mini p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Sidebar Toggle Styles */
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--background);
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .brand-name,
+        .sidebar.collapsed .sidebar-user-info,
+        .sidebar.collapsed .nav-item span:not(.nav-icon),
+        .sidebar.collapsed .logout-btn span:not(.nav-icon) {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-profile {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .sidebar-avatar,
+        .sidebar.collapsed .sidebar-avatar-img {
+            margin: 0 auto;
+        }
+
+        .sidebar.collapsed .nav-item,
+        .sidebar.collapsed .logout-btn {
+            justify-content: center;
+        }
+
+        /* Sidebar Profile Styles */
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-avatar,
+        .sidebar-avatar-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-avatar {
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-avatar-img {
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            font-size: 0.938rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.813rem;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Adjust main content when sidebar is collapsed */
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+    </style>
+    
+    <script>
+        // Mobile Menu Toggle Functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('active');
+                
+                // Change icon
+                if (sidebar.classList.contains('mobile-open')) {
+                    mobileMenuToggle.textContent = '✕';
+                } else {
+                    mobileMenuToggle.textContent = '☰';
+                }
+            });
+            
+            // Close menu when clicking overlay
+            mobileOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('active');
+                mobileMenuToggle.textContent = '☰';
+            });
+            
+            // Close menu when clicking a nav link
+            const navLinks = sidebar.querySelectorAll('.nav-item, .logout-btn');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 1024) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileOverlay.classList.remove('active');
+                        mobileMenuToggle.textContent = '☰';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

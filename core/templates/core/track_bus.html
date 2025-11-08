@@ -1,0 +1,678 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Bus - CampusShuttle</title>
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+
+<style>
+    /* Map specific styles */
+    .map-container {
+        flex: 1;
+        padding: 2rem;
+        display: flex;
+        gap: 2rem;
+        overflow: hidden;
+    }
+
+    #map {
+        flex: 1;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        min-height: 600px;
+    }
+
+    .map-controls {
+        width: 300px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .control-section {
+        margin-bottom: 25px;
+    }
+
+    .control-section h3 {
+        margin: 0 0 15px;
+        font-size: 16px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .control-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 10px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-danger {
+        background: #ff4757;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #ff3838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    }
+
+    .btn-success {
+        background: #2ecc71;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #27ae60;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #667eea;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .toggle-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .bus-info-card {
+        background: #f8f9ff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .bus-info-card h4 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: #667eea;
+    }
+
+    .bus-info-card p {
+        margin: 5px 0;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-offline {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .location-status {
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+
+    .location-status.sharing {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .location-status.not-sharing {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            left: -250px;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            transition: left 0.3s;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .mobile-menu-toggle {
+            display: block;
+        }
+
+        .map-container {
+            flex-direction: column;
+        }
+
+        .map-controls {
+            width: 100%;
+            max-height: 300px;
+        }
+
+        #map {
+            min-height: 400px;
+        }
+    }
+</style>
+</head>
+<body>
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        ☰
+    </button>
+    
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="4" y="12" width="24" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="10" cy="26" r="2" fill="currentColor"/>
+                    <circle cx="22" cy="26" r="2" fill="currentColor"/>
+                    <path d="M28 16L24 12H20V16H28Z" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">CampusShuttle</span>
+            </div>
+
+            <!-- User Profile in Sidebar -->
+            <div class="sidebar-profile">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" class="sidebar-avatar-img">
+                {% else %}
+                    <div class="sidebar-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                {% endif %}
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{% url 'core:dashboard' %}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                {% if user.role == 'student' %}
+                <a href="{% url 'core:routes_list' %}" class="nav-item">
+                    <span class="nav-icon">🚌</span>
+                    <span>Browse Routes</span>
+                </a>
+                <a href="{% url 'core:my_registration' %}" class="nav-item">
+                    <span class="nav-icon">�</span>
+                    <span>My Registration</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'core:track_bus' %}" class="nav-item active">
+                    <span class="nav-icon">📍</span>
+                    <span>Track Bus</span>
+                </a>
+                {% if user.role == 'student' %}
+                <a href="{% url 'core:student_queries' %}" class="nav-item">
+                    <span class="nav-icon">❓</span>
+                    <span>My Queries</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'core:notifications_list' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </a>
+                <a href="{% url 'core:edit_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>Edit Profile</span>
+                </a>
+                {% if user.role == 'admin' %}
+                <a href="/admin/" class="nav-item" target="_blank">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Admin Panel</span>
+                </a>
+                {% endif %}
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{% url 'core:logout' %}" class="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>🗺️ Track Bus</h1>
+                    <p>Real-time bus location tracking</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile" class="user-avatar-img">
+                        {% else %}
+                            <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+                        {% endif %}
+                        <div class="user-info">
+                            <span class="user-name">{{ user.get_full_name }}</span>
+                            <span class="user-role">{{ user.get_role_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+        <div class="map-container">
+            <!-- Map -->
+            <div id="map"></div>
+
+            <!-- Controls Panel -->
+            <div class="map-controls">
+                {% if user.role == 'student' and no_registration %}
+                <div class="alert alert-warning">
+                    <strong>No Active Registration</strong><br>
+                    You need to register for a bus route to see tracking information.
+                </div>
+                {% endif %}
+
+                <!-- Driver Controls -->
+                {% if user.role == 'driver' %}
+                <div class="control-section">
+                    <h3>📡 Location Sharing</h3>
+                    <div id="locationStatus" class="location-status not-sharing">
+                        Location sharing is OFF
+                    </div>
+                    <button id="startSharing" class="control-btn btn-success">
+                        ▶️ Start Sharing Location
+                    </button>
+                    <button id="stopSharing" class="control-btn btn-danger" style="display: none;">
+                        ⏹️ Stop Sharing Location
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- Auto Refresh -->
+                <div class="control-section">
+                    <h3>🔄 Auto Refresh</h3>
+                    <label class="toggle-label">
+                        <span>Update every 20 seconds</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoRefresh" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <!-- Bus Information -->
+                <div class="control-section">
+                    <h3>🚌 Active Buses</h3>
+                    <div id="busInfo">
+                        <p style="color: #666; font-size: 12px;">Loading...</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>ℹ️ Note:</strong><br>
+                    <small>
+                        {% if user.role == 'student' %}
+                        You can only see your registered route's bus location.
+                        {% elif user.role == 'admin' %}
+                        You can view all active bus locations.
+                        {% elif user.role == 'driver' %}
+                        Share your location to help students track your bus.
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        mobileMenuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+        });
+
+        mobileOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+        });
+    </script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+
+<script>
+    let map;
+    let markers = {};
+    let autoRefreshInterval;
+    let locationSharingInterval;
+    let isSharing = false;
+
+    // Initialize map
+    function initMap() {
+        // Default center (India)
+        map = L.map('map').setView([20.5937, 78.9629], 5);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Load initial locations
+        loadLocations();
+
+        // Setup auto-refresh
+        document.getElementById('autoRefresh').addEventListener('change', function() {
+            if (this.checked) {
+                autoRefreshInterval = setInterval(loadLocations, 20000);
+            } else {
+                clearInterval(autoRefreshInterval);
+            }
+        });
+
+        // Start auto-refresh by default
+        autoRefreshInterval = setInterval(loadLocations, 20000);
+    }
+
+    // Load bus locations
+    function loadLocations() {
+        fetch('{% url "core:get_locations" %}')
+            .then(response => response.json())
+            .then(data => {
+                updateMarkers(data.locations);
+                updateBusInfo(data.locations);
+            })
+            .catch(error => {
+                console.error('Error loading locations:', error);
+            });
+    }
+
+    // Update markers on map
+    function updateMarkers(locations) {
+        // Remove old markers
+        Object.values(markers).forEach(marker => map.removeLayer(marker));
+        markers = {};
+
+        if (locations.length === 0) {
+            return;
+        }
+
+        // Add new markers
+        locations.forEach(location => {
+            const marker = L.marker([location.latitude, location.longitude], {
+                icon: L.divIcon({
+                    html: '🚌',
+                    className: 'bus-marker',
+                    iconSize: [30, 30]
+                })
+            }).addTo(map);
+
+            const popupContent = `
+                <div style="padding: 10px;">
+                    <h4 style="margin: 0 0 8px; color: #667eea;">${location.route_name}</h4>
+                    <p style="margin: 5px 0; font-size: 12px;"><strong>Driver:</strong> ${location.driver_name}</p>
+                    ${location.speed ? `<p style="margin: 5px 0; font-size: 12px;"><strong>Speed:</strong> ${location.speed} km/h</p>` : ''}
+                    <p style="margin: 5px 0; font-size: 11px; color: #666;">
+                        <strong>Last Updated:</strong><br>${new Date(location.timestamp).toLocaleString()}
+                    </p>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            markers[location.driver_id] = marker;
+        });
+
+        // Fit map to show all markers
+        if (locations.length > 0) {
+            const bounds = L.latLngBounds(locations.map(loc => [loc.latitude, loc.longitude]));
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }
+
+    // Update bus information panel
+    function updateBusInfo(locations) {
+        const busInfoDiv = document.getElementById('busInfo');
+        
+        if (locations.length === 0) {
+            busInfoDiv.innerHTML = '<p style="color: #666; font-size: 12px;">No active buses at the moment.</p>';
+            return;
+        }
+
+        let html = '';
+        locations.forEach(location => {
+            const isActive = new Date() - new Date(location.timestamp) < 300000; // 5 minutes
+            html += `
+                <div class="bus-info-card">
+                    <h4>${location.route_name}</h4>
+                    <p><strong>Driver:</strong> ${location.driver_name}</p>
+                    ${location.speed ? `<p><strong>Speed:</strong> ${location.speed} km/h</p>` : ''}
+                    <p>
+                        <span class="status-badge ${isActive ? 'status-active' : 'status-offline'}">
+                            ${isActive ? '● Active' : '○ Offline'}
+                        </span>
+                    </p>
+                </div>
+            `;
+        });
+        
+        busInfoDiv.innerHTML = html;
+    }
+
+    {% if user.role == 'driver' %}
+    // Driver location sharing
+    document.getElementById('startSharing').addEventListener('click', function() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+
+        isSharing = true;
+        document.getElementById('startSharing').style.display = 'none';
+        document.getElementById('stopSharing').style.display = 'block';
+        document.getElementById('locationStatus').className = 'location-status sharing';
+        document.getElementById('locationStatus').textContent = 'Location sharing is ON';
+
+        // Share location immediately
+        shareLocation();
+
+        // Share location every 10 seconds
+        locationSharingInterval = setInterval(shareLocation, 10000);
+    });
+
+    document.getElementById('stopSharing').addEventListener('click', function() {
+        isSharing = false;
+        clearInterval(locationSharingInterval);
+        
+        document.getElementById('startSharing').style.display = 'block';
+        document.getElementById('stopSharing').style.display = 'none';
+        document.getElementById('locationStatus').className = 'location-status not-sharing';
+        document.getElementById('locationStatus').textContent = 'Location sharing is OFF';
+
+        // Send final update with is_active=false
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const data = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                speed: position.coords.speed,
+                heading: position.coords.heading,
+                accuracy: position.coords.accuracy,
+                is_active: false
+            };
+
+            fetch('{% url "core:update_location" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+        });
+    });
+
+    function shareLocation() {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const data = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    speed: position.coords.speed,
+                    heading: position.coords.heading,
+                    accuracy: position.coords.accuracy,
+                    is_active: true
+                };
+
+                fetch('{% url "core:update_location" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Location updated successfully');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating location:', error);
+                });
+            },
+            function(error) {
+                console.error('Geolocation error:', error);
+                alert('Unable to get your location. Please check your browser permissions.');
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
+    }
+    {% endif %}
+
+    // Initialize map when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        clearInterval(autoRefreshInterval);
+        {% if user.role == 'driver' %}
+        if (isSharing) {
+            clearInterval(locationSharingInterval);
+        }
+        {% endif %}
+    });
+</script>
+</body>
+</html>
