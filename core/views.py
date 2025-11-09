@@ -682,7 +682,10 @@ def get_locations(request):
     if not request.user.is_authenticated:
         return JsonResponse({'locations': []})
     
+    # Time threshold for active tracking (5 minutes)
     time_threshold = timezone.now() - timedelta(minutes=5)
+    # Longer threshold for students to see last known location (24 hours)
+    student_time_threshold = timezone.now() - timedelta(hours=24)
     
     if request.user.role == 'admin':
         # Admin can see all active locations
@@ -692,7 +695,7 @@ def get_locations(request):
         ).select_related('driver', 'route').order_by('driver', '-timestamp').distinct('driver')
         
     elif request.user.role == 'student':
-        # Student can only see their registered route's driver
+        # Student can see their registered route's driver last location (even if not actively sharing)
         registration = RouteRegistration.objects.filter(
             student=request.user,
             status='active'
@@ -701,10 +704,10 @@ def get_locations(request):
         if not registration:
             return JsonResponse({'locations': []})
         
+        # Get the most recent location for the driver of this route (within last 24 hours)
         locations = BusLocation.objects.filter(
             route=registration.route,
-            is_active=True,
-            updated_at__gte=time_threshold
+            updated_at__gte=student_time_threshold
         ).select_related('driver', 'route').order_by('driver', '-timestamp').distinct('driver')
     
     elif request.user.role == 'driver':
@@ -733,10 +736,10 @@ def get_locations(request):
             'speed': float(location.speed) if location.speed else None,
             'heading': float(location.heading) if location.heading else None,
             'accuracy': float(location.accuracy) if location.accuracy else None,
+            'is_active': location.is_active,
             'timestamp': location.timestamp.isoformat(),
             'updated_at': location.updated_at.isoformat(),
             'minutes_ago': int((timezone.now() - location.updated_at).total_seconds() / 60)
         })
     
     return JsonResponse({'locations': locations_data})
-    return redirect('core:notifications_list')

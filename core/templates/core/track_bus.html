@@ -505,18 +505,27 @@
 
         // Add new markers
         locations.forEach(location => {
+            // Determine if location is actively being shared or is last known location
+            const isCurrentlyActive = location.is_active && location.minutes_ago < 5;
+            const markerColor = isCurrentlyActive ? '🚌' : '📍';
+            
             const marker = L.marker([location.latitude, location.longitude], {
                 icon: L.divIcon({
-                    html: '🚌',
+                    html: markerColor,
                     className: 'bus-marker',
                     iconSize: [30, 30]
                 })
             }).addTo(map);
 
+            const statusText = isCurrentlyActive 
+                ? '<span style="color: #2ecc71;">● Live Location</span>' 
+                : `<span style="color: #f39c12;">○ Last Known Location (${location.minutes_ago} min ago)</span>`;
+
             const popupContent = `
                 <div style="padding: 10px;">
                     <h4 style="margin: 0 0 8px; color: #667eea;">${location.route_name}</h4>
                     <p style="margin: 5px 0; font-size: 12px;"><strong>Driver:</strong> ${location.driver_name}</p>
+                    <p style="margin: 5px 0; font-size: 12px;">${statusText}</p>
                     ${location.speed ? `<p style="margin: 5px 0; font-size: 12px;"><strong>Speed:</strong> ${location.speed} km/h</p>` : ''}
                     <p style="margin: 5px 0; font-size: 11px; color: #666;">
                         <strong>Last Updated:</strong><br>${new Date(location.timestamp).toLocaleString()}
@@ -540,21 +549,26 @@
         const busInfoDiv = document.getElementById('busInfo');
         
         if (locations.length === 0) {
-            busInfoDiv.innerHTML = '<p style="color: #666; font-size: 12px;">No active buses at the moment.</p>';
+            busInfoDiv.innerHTML = '<p style="color: #666; font-size: 12px;">No buses tracked yet.</p>';
             return;
         }
 
         let html = '';
         locations.forEach(location => {
-            const isActive = new Date() - new Date(location.timestamp) < 300000; // 5 minutes
+            const isCurrentlyActive = location.is_active && location.minutes_ago < 5;
+            const statusClass = isCurrentlyActive ? 'status-active' : 'status-offline';
+            const statusText = isCurrentlyActive 
+                ? '● Live' 
+                : `○ Last seen ${location.minutes_ago} min ago`;
+            
             html += `
                 <div class="bus-info-card">
                     <h4>${location.route_name}</h4>
                     <p><strong>Driver:</strong> ${location.driver_name}</p>
-                    ${location.speed ? `<p><strong>Speed:</strong> ${location.speed} km/h</p>` : ''}
+                    ${location.speed && isCurrentlyActive ? `<p><strong>Speed:</strong> ${location.speed} km/h</p>` : ''}
                     <p>
-                        <span class="status-badge ${isActive ? 'status-active' : 'status-offline'}">
-                            ${isActive ? '● Active' : '○ Offline'}
+                        <span class="status-badge ${statusClass}">
+                            ${statusText}
                         </span>
                     </p>
                 </div>
