@@ -687,12 +687,21 @@ def get_locations(request):
     # Longer threshold for students to see last known location (24 hours)
     student_time_threshold = timezone.now() - timedelta(hours=24)
     
+    locations_list = []
+    
     if request.user.role == 'admin':
-        # Admin can see all active locations
-        locations = BusLocation.objects.filter(
+        # Admin can see all active locations (get latest per driver)
+        all_locations = BusLocation.objects.filter(
             is_active=True,
             updated_at__gte=time_threshold
-        ).select_related('driver', 'route').order_by('driver', '-timestamp').distinct('driver')
+        ).select_related('driver', 'route').order_by('driver__id', '-timestamp')
+        
+        # Get unique drivers and their latest location
+        seen_drivers = set()
+        for loc in all_locations:
+            if loc.driver.id not in seen_drivers:
+                locations_list.append(loc)
+                seen_drivers.add(loc.driver.id)
         
     elif request.user.role == 'student':
         # Student can see their registered route's driver last location (even if not actively sharing)
@@ -705,25 +714,31 @@ def get_locations(request):
             return JsonResponse({'locations': []})
         
         # Get the most recent location for the driver of this route (within last 24 hours)
-        locations = BusLocation.objects.filter(
+        location = BusLocation.objects.filter(
             route=registration.route,
             updated_at__gte=student_time_threshold
-        ).select_related('driver', 'route').order_by('driver', '-timestamp').distinct('driver')
+        ).select_related('driver', 'route').order_by('-timestamp').first()
+        
+        if location:
+            locations_list.append(location)
     
     elif request.user.role == 'driver':
         # Driver can only see their own location
-        locations = BusLocation.objects.filter(
+        location = BusLocation.objects.filter(
             driver=request.user,
             is_active=True,
             updated_at__gte=time_threshold
-        ).select_related('driver', 'route').order_by('-timestamp')[:1]
+        ).select_related('driver', 'route').order_by('-timestamp').first()
+        
+        if location:
+            locations_list.append(location)
     
     else:
         return JsonResponse({'locations': []})
     
     # Format response
     locations_data = []
-    for location in locations:
+    for location in locations_list:
         locations_data.append({
             'driver_id': location.driver.id,
             'driver_name': location.driver.get_full_name(),
