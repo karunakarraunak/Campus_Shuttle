@@ -52,6 +52,12 @@ test_*.html
 create_*.py
 assign_*.py
 
+# Credentials & Sensitive Files
+credentials.html
+*credentials*.html
+passwords.txt
+secrets.txt
+
 # Coverage reports
 htmlcov/
 .coverage

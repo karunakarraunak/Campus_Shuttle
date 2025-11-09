@@ -14,7 +14,7 @@ A comprehensive, real-time campus transport management system built with Django,
   - [macOS Setup](#macos-setup)
   - [Windows Setup](#windows-setup)
 - [Usage](#-usage)
-- [Test Credentials](#-test-credentials)
+- [Getting Started](#-getting-started)
 - [Project Structure](#-project-structure)
 - [Database Models](#️-database-models)
 - [API Endpoints](#-api-endpoints)
@@ -239,21 +239,137 @@ After installation, you'll need to:
 2. Navigate to "Track Bus" section
 3. View all active driver locations simultaneously
 
-## 🔑 Test Credentials
+## � Getting Started
 
-A convenient credentials page is available at `credentials.html` in the project root.
+### Step 1: Create Superuser
 
-**Pre-configured Test Accounts:**
+After setting up the project and running migrations, create an admin superuser:
 
-| Role | Username | Password | Description |
-|------|----------|----------|-------------|
-| 👨‍💼 Admin | `admin` | `admin123` | Full system access |
-| 👨‍🎓 Student 1 | `CS001` | `student123` | Computer Science student |
-| 👨‍🎓 Student 2 | `CS002` | `student123` | Computer Science student |
-| 👨‍✈️ Driver 1 | `EMP101` | `driver123` | Assigned to Route SJB-WF-EC |
-| 👨‍✈️ Driver 2 | `EMP102` | `driver123` | Assigned to Route SJB-BS-JP |
+```bash
+python manage.py createsuperuser
+```
 
-**📌 Note:** Open `credentials.html` in your browser for a beautiful interface with copy-to-clipboard functionality!
+You'll be prompted to enter:
+- **Username**: Choose your admin username
+- **Email**: Your email address (optional)
+- **Password**: Choose a secure password
+- **Confirm Password**: Re-enter the password
+
+### Step 2: Access Admin Panel
+
+1. Start the development server:
+   ```bash
+   python manage.py runserver
+   ```
+
+2. Navigate to the admin panel:
+   ```
+   http://127.0.0.1:8000/admin/
+   ```
+
+3. Login with your superuser credentials
+
+### Step 3: Create Test Users
+
+In the admin panel, create users for testing:
+
+**Create an Admin User:**
+1. Go to **Users** → **Add User**
+2. Set username (e.g., `admin`)
+3. Set password
+4. Edit the user and set **Role** to `Admin`
+5. Save
+
+**Create Student Users:**
+1. Go to **Users** → **Add User**
+2. Set username (e.g., `CS001`, `CS002`)
+3. Set password
+4. Edit the user and set:
+   - **Role**: `Student`
+   - **First name**, **Last name**
+   - **Email**, **Phone number**
+5. Save
+
+**Create Driver Users:**
+1. Go to **Users** → **Add User**
+2. Set username (e.g., `EMP101`, `EMP102`)
+3. Set password
+4. Edit the user and set:
+   - **Role**: `Driver`
+   - **First name**, **Last name**
+   - **Phone number**
+5. Save
+
+### Step 4: Create Bus Routes
+
+1. In admin panel, go to **Bus Routes** → **Add Bus Route**
+2. Fill in route details:
+   - Name (e.g., "Whitefield - Electronic City Route")
+   - Route number (e.g., "SJB-WF-EC")
+   - Bus number
+   - Capacity
+   - Departure time
+   - Arrival time
+3. Assign a driver to the route
+4. Save
+
+### Step 5: Add Bus Stops
+
+1. Go to **Bus Stops** → **Add Bus Stop**
+2. For each stop, enter:
+   - Route (select from dropdown)
+   - Stop name
+   - Stop order (sequence number)
+   - Pickup time
+   - Base fare
+   - Distance from SJB
+   - GPS coordinates (latitude, longitude)
+3. Save
+
+### Step 6: Test the System
+
+1. **Login as Admin** → View all routes, manage users, view analytics
+2. **Login as Student** → Register for a route, track bus location
+3. **Login as Driver** → Share location, view assigned route
+
+### Quick Setup Script (Optional)
+
+You can create test data programmatically:
+
+```python
+# create_test_data.py
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'transport_management_system.settings')
+django.setup()
+
+from core.models import User, BusRoute, BusStop
+from django.utils import timezone
+from datetime import time, date
+
+# Create users
+admin = User.objects.create_user(username='admin', password='your_password', role='admin')
+student = User.objects.create_user(username='student1', password='your_password', role='student')
+driver = User.objects.create_user(username='driver1', password='your_password', role='driver')
+
+# Create route
+route = BusRoute.objects.create(
+    name='Test Route',
+    route_number='TR-001',
+    bus_number='KA01AB1234',
+    capacity=40,
+    driver=driver,
+    departure_time=time(8, 0),
+    arrival_time=time(9, 30)
+)
+
+print("Test data created successfully!")
+```
+
+Run with: `python create_test_data.py`
+
+**⚠️ Security Note:** Never commit passwords or sensitive credentials to your repository!
 
 ## 📁 Project Structure
 
@@ -261,8 +377,8 @@ A convenient credentials page is available at `credentials.html` in the project 
 Campus_Shuttle/
 ├── 📄 manage.py                      # Django management script
 ├── 📄 requirements.txt               # Python dependencies
-├── 📄 credentials.html               # Test credentials page
 ├── 📄 README.md                      # Project documentation
+├── 📄 GETTING_STARTED.md             # Step-by-step setup guide
 ├── 📄 .gitignore                     # Git ignore rules
 │
 ├── 📂 core/                          # Main Django application
