@@ -726,7 +726,7 @@ def get_locations(request):
             'driver_name': location.driver.get_full_name(),
             'driver_phone': location.driver.phone_number,
             'route_id': location.route.id,
-            'route_name': location.route.route_name,
+            'route_name': location.route.name,
             'route_number': location.route.route_number,
             'latitude': float(location.latitude),
             'longitude': float(location.longitude),
