@@ -591,7 +591,7 @@ def track_bus(request):
     if request.user.role == 'student':
         registration = RouteRegistration.objects.filter(
             student=request.user,
-            status='approved'
+            status='active'
         ).select_related('route').first()
         
         if registration:
@@ -695,7 +695,7 @@ def get_locations(request):
         # Student can only see their registered route's driver
         registration = RouteRegistration.objects.filter(
             student=request.user,
-            status='approved'
+            status='active'
         ).select_related('route').first()
         
         if not registration:
