@@ -572,11 +572,13 @@
             return;
         }
 
+        console.log('Starting location sharing...');
+        
         isSharing = true;
         document.getElementById('startSharing').style.display = 'none';
         document.getElementById('stopSharing').style.display = 'block';
         document.getElementById('locationStatus').className = 'location-status sharing';
-        document.getElementById('locationStatus').textContent = 'Location sharing is ON';
+        document.getElementById('locationStatus').textContent = 'Getting your location...';
 
         // Share location immediately
         shareLocation();
@@ -612,13 +614,24 @@
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Stopped sharing location');
+            })
+            .catch(error => {
+                console.error('Error stopping location share:', error);
             });
+        }, function(error) {
+            console.error('Could not get final location:', error);
         });
     });
 
     function shareLocation() {
         navigator.geolocation.getCurrentPosition(
             function(position) {
+                console.log('Got position:', position.coords);
+                
                 const data = {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
@@ -628,6 +641,8 @@
                     is_active: true
                 };
 
+                console.log('Sending location data:', data);
+
                 fetch('{% url "core:update_location" %}', {
                     method: 'POST',
                     headers: {
@@ -636,19 +651,48 @@
                     },
                     body: JSON.stringify(data)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Response data:', data);
                     if (data.success) {
                         console.log('Location updated successfully');
+                        // Show success feedback
+                        document.getElementById('locationStatus').textContent = 'Location shared successfully ✓';
+                        setTimeout(() => {
+                            if (isSharing) {
+                                document.getElementById('locationStatus').textContent = 'Location sharing is ON';
+                            }
+                        }, 2000);
+                    } else if (data.error) {
+                        console.error('Server error:', data.error);
+                        alert('Error: ' + data.error);
                     }
                 })
                 .catch(error => {
                     console.error('Error updating location:', error);
+                    alert('Failed to update location. Please check your connection.');
                 });
             },
             function(error) {
                 console.error('Geolocation error:', error);
-                alert('Unable to get your location. Please check your browser permissions.');
+                let errorMsg = 'Unable to get your location. ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg += 'Please allow location access in your browser settings.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg += 'Location information is unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg += 'Location request timed out.';
+                        break;
+                    default:
+                        errorMsg += 'An unknown error occurred.';
+                }
+                alert(errorMsg);
             },
             {
                 enableHighAccuracy: true,

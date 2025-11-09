@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 import json
 from .forms import (StudentSignUpForm, DriverSignUpForm, AdminSignUpForm, LoginForm, 
                    RouteRegistrationForm, ProfileEditForm, PasswordChangeForm,
@@ -601,12 +602,15 @@ def track_bus(request):
     return render(request, 'core/track_bus.html', context)
 
 
-@login_required
+@csrf_exempt
 @require_http_methods(["POST"])
 def update_location(request):
     """
     API endpoint for drivers to update their GPS location.
     """
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     if request.user.role != 'driver':
         return JsonResponse({'error': 'Only drivers can update location'}, status=403)
     
@@ -667,7 +671,7 @@ def update_location(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@login_required
+@csrf_exempt
 def get_locations(request):
     """
     API endpoint to get current bus locations based on user role.
@@ -675,6 +679,9 @@ def get_locations(request):
     - Admin: Returns all active driver locations
     - Drivers: Returns their own location
     """
+    if not request.user.is_authenticated:
+        return JsonResponse({'locations': []})
+    
     time_threshold = timezone.now() - timedelta(minutes=5)
     
     if request.user.role == 'admin':
